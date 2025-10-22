@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyTracker</string>
+    
+    <!-- Praise messages -->
+    <string-array name="praise_messages">
+        <item>Nice! You did it — tiny legend! 🌟</item>
+        <item>Goal ticked — high five! ✋</item>
+        <item>You pressed the button and the universe approved. ✨</item>
+        <item>Another one done! You\'re on fire! 🔥</item>
+        <item>Boom! Progress recorded. 💪</item>
+        <item>Look at you go! Keep it up! 🚀</item>
+        <item>Success! You\'re making it happen! 🎯</item>
+    </string-array>
+    
+    <!-- Scold messages -->
+    <string-array name="scold_messages">
+        <item>Hey! You missed your slot — lazybones 😜</item>
+        <item>No press detected — the chair wins today. 🪑</item>
+        <item>You forgot! Don\'t worry, tomorrow\'s another chance. 📅</item>
+        <item>Oops! Window closed. Better luck next time! ⏰</item>
+        <item>Missing in action! Get back on track! 🎯</item>
+        <item>Goal skipped. The couch called, didn\'t it? 🛋️</item>
+        <item>Missed it! But hey, nobody\'s perfect. 🤷</item>
+        <item>Window missed! Tomorrow is a new day. 🌅</item>
+    </string-array>
+</resources>
+
