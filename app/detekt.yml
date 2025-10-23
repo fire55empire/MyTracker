@@ -72,6 +72,4 @@ style:
     active: false  # Compose uses wildcard imports
   UnusedPrivateProperty:
     active: false  # False positives
-  ImplicitDefaultLocale:
-    active: false  # UI formatting is OK with default locale
 
