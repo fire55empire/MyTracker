@@ -188,7 +188,9 @@ class IntegrationTest {
         )
         
         assertEquals(365, goal.totalRequiredPresses)
-        assertEquals(LocalDate.of(2024, 12, 31), goal.endDate)
+        // Goal starts Jan 1, runs for 365 days, ends on day 365 which is Dec 30
+        // (startDate + durationDays - 1 = Jan 1 + 364 days = Dec 30, 2024 is leap year)
+        assertEquals(LocalDate.of(2024, 12, 30), goal.endDate)
         
         // After 100 days
         assertEquals("27.4%", goal.calculateProgressPercentage(100))
