@@ -18,7 +18,6 @@ local.properties
 *.iml
 .idea/
 .gradle/
-gradle/
 local.properties
 
 # Built application files

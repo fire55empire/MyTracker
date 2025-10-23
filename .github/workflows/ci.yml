@@ -66,4 +66,3 @@ jobs:
         with:
           name: detekt-results
           path: app/build/reports/detekt/
-
