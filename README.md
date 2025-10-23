@@ -1,5 +1,7 @@
 # MyTracker
 
+![Android CI](https://github.com/fire55empire/MyTracker/workflows/Android%20CI/badge.svg)
+
 A minimal habit-tracking Android app built with Kotlin and Jetpack Compose. Track one goal at a time with time-window based progress tracking and humorous notifications.
 
 ## Features

@@ -105,3 +105,6 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+# Detekt
+**/build/reports/detekt/
+
