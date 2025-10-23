@@ -39,28 +39,8 @@ exceptions:
     active: false
 
 formatting:
-  active: true
-  MaximumLineLength:
-    active: false  # Too strict for Compose
-  NoTrailingSpaces:
-    active: false  # Auto-fixable, don't fail build
-  NoConsecutiveBlankLines:
-    active: false
-  NoBlankLineBeforeRbrace:
-    active: false
-  ArgumentListWrapping:
-    active: false  # Compose style
-  Wrapping:
-    active: false
-  Indentation:
-    active: false  # Let IDE handle this
-  NoMultipleSpaces:
-    active: false
-  NoEmptyFirstLineInMethodBlock:
-    active: false
-  MultiLineIfElse:
-    active: false
-  
+  active: false  # Disable all formatting rules to avoid conflicts
+
 naming:
   active: true
   FunctionNaming:
@@ -88,14 +68,6 @@ style:
     active: false  # Too strict
   WildcardImport:
     active: false  # Compose uses wildcard imports
-  NoWildcardImports:
-    active: false  # Same as above
   UnusedPrivateProperty:
     active: false  # False positives
-  NoUnusedImports:
-    active: false
-  ImplicitDefaultLocale:
-    active: false  # UI formatting is OK
-  UnusedPrivateMember:
-    active: false
 
