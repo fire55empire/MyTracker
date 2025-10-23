@@ -31,6 +31,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Alarm receiver for exact notification timing -->
+        <receiver
+            android:name=".receiver.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Boot receiver to reschedule notifications after reboot -->
         <receiver
             android:name=".receiver.BootReceiver"

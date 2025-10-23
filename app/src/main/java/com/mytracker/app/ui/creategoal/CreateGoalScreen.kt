@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun CreateGoalScreen(
     onGoalCreated: () -> Unit,
+    onBackPressed: (() -> Unit)? = null,
     viewModel: CreateGoalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -28,7 +29,17 @@ fun CreateGoalScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create New Goal") }
+                title = { Text("Create New Goal") },
+                navigationIcon = {
+                    if (onBackPressed != null) {
+                        IconButton(onClick = onBackPressed) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Back"
+                            )
+                        }
+                    }
+                }
             )
         }
     ) { padding ->

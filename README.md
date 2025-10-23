@@ -5,9 +5,10 @@ A minimal habit-tracking Android app built with Kotlin and Jetpack Compose. Trac
 ## Features
 
 - ✅ **Single Active Goal**: Focus on one goal at a time
+- 📋 **Goal Templates**: Choose from 10+ pre-made goal templates or create your own
 - ⏰ **Time Windows**: Define specific time windows for each day
 - 📊 **Progress Tracking**: Visual progress bar showing completion percentage
-- 🔔 **Smart Notifications**: Humorous reminders for missed windows and praise for completed ones
+- 🔔 **Exact Notifications**: Precise AlarmManager-based reminders for missed windows
 - 🚫 **No Editing**: Simple, straightforward goal creation without complexity
 - 🗑️ **Easy Cancellation**: Delete goal and all history with one action
 - 🔄 **Boot Persistence**: Notifications reschedule after device reboot
@@ -17,7 +18,7 @@ A minimal habit-tracking Android app built with Kotlin and Jetpack Compose. Trac
 - **UI Layer**: Jetpack Compose with Material 3
 - **Architecture Pattern**: MVVM (ViewModel + Repository)
 - **Database**: Room for local persistence
-- **Background Work**: WorkManager for notification scheduling
+- **Background Work**: AlarmManager for exact notification timing
 - **Dependency Injection**: Hilt
 - **Concurrency**: Kotlin Coroutines + Flow
 
@@ -27,7 +28,7 @@ A minimal habit-tracking Android app built with Kotlin and Jetpack Compose. Trac
 - **UI**: Jetpack Compose
 - **Database**: Room
 - **DI**: Hilt
-- **Background**: WorkManager
+- **Background**: AlarmManager
 - **Min SDK**: 21
 - **Target SDK**: 34
 - **Build**: Gradle Kotlin DSL
@@ -47,11 +48,12 @@ app/src/main/java/com/mytracker/app/
 ├── ui/
 │   ├── activegoal/       # Active Goal screen
 │   ├── creategoal/       # Create Goal screen
+│   ├── templateselection/ # Goal Templates screen
 │   ├── navigation/       # Navigation setup
 │   └── theme/            # Material 3 theme
 ├── utils/                # Utilities (TimeProvider, NotificationHelper, etc.)
-├── worker/               # WorkManager workers
-├── receiver/             # BroadcastReceivers
+├── worker/               # Notification scheduler
+├── receiver/             # BroadcastReceivers (AlarmReceiver, BootReceiver)
 ├── di/                   # Hilt modules
 ├── MainActivity.kt
 └── MyTrackerApplication.kt
@@ -123,16 +125,18 @@ app/src/main/java/com/mytracker/app/
 
 ### Goal Creation
 
-1. App opens to **Create Goal** screen if no active goal exists
-2. User enters:
-   - Goal title (e.g., "Exercise Daily")
-   - Number of days (e.g., 30)
-   - Time windows (e.g., 08:00-10:00, 18:00-20:00)
+1. App opens to **Template Selection** screen if no active goal exists
+2. User can:
+   - **Select a pre-made template** (Water intake, Exercise, Meditation, etc.)
+   - **Create custom goal** with:
+     - Goal title (e.g., "Exercise Daily")
+     - Number of days (e.g., 30)
+     - Time windows (e.g., 08:00-10:00, 18:00-20:00)
 3. Validation ensures:
    - No overlapping windows
    - Windows don't cross midnight
    - At least one window defined
-4. On creation, notifications are scheduled for each window
+4. On creation, exact alarms are scheduled for each window using AlarmManager
 
 ### Active Goal
 
@@ -146,19 +150,20 @@ app/src/main/java/com/mytracker/app/
 
 ### Notifications & Scheduling
 
-- **Implementation**: WorkManager with OneTimeWorkRequest for each window
-- **Missed Window Check**: At the end of each time window, a worker checks if the user pressed the button
+- **Implementation**: AlarmManager with exact alarms for precise timing
+- **Missed Window Check**: At the end of each time window, AlarmReceiver checks if the user pressed the button
 - **Notifications**:
   - If missed → humorous scold message (random from array)
   - If pressed → optional praise notification
-- **Boot Persistence**: BootReceiver reschedules all notifications after device reboot
+- **Boot Persistence**: BootReceiver reschedules all alarms after device reboot
 
-#### WorkManager Strategy
+#### AlarmManager Strategy
 
-Each time window gets a OneTimeWorkRequest scheduled for its end time:
-- Goal with 2 windows/day for 7 days = 14 scheduled work requests
-- Work is tagged by goal ID for easy cancellation
-- On boot, all work is rescheduled via BootReceiver
+Each time window gets an exact alarm scheduled for its end time:
+- Goal with 2 windows/day for 7 days = 14 scheduled alarms
+- Uses `setExactAndAllowWhileIdle()` for reliable delivery even in Doze mode
+- Alarms wake the device if needed
+- On boot, all alarms are rescheduled via BootReceiver
 
 ### Data Model
 
@@ -275,16 +280,18 @@ Key dependencies (see `app/build.gradle.kts` for versions):
 
 **Notifications not working**
 - Check notification permissions in app settings
-- Disable battery optimization for the app
 - On Android 13+, ensure POST_NOTIFICATIONS permission is granted
+- On Android 12+, ensure "Alarms & reminders" permission is enabled
+- Disable battery optimization for the app if needed
 
 **App crashes on startup**
 - Check logcat for Room database errors
 - Clear app data and reinstall
 
-**WorkManager not scheduling**
-- Check battery optimization settings
+**Alarms not scheduling**
+- Check "Alarms & reminders" permission in app settings
 - Verify SCHEDULE_EXACT_ALARM permission (Android 12+)
+- Ensure app is not restricted in battery optimization
 
 ## Future Enhancements (Not Implemented)
 
@@ -293,8 +300,8 @@ Key dependencies (see `app/build.gradle.kts` for versions):
 - Editable goals
 - Statistics and charts
 - Export/import data
-- Goal templates
 - Customizable notifications
+- Custom template creation
 
 ## License
 

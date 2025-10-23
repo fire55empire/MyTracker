@@ -1,19 +1,22 @@
 package com.mytracker.app.worker
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
-import androidx.work.*
+import android.content.Intent
+import android.os.Build
 import com.mytracker.app.data.repository.GoalRepository
+import com.mytracker.app.receiver.AlarmReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.concurrent.TimeUnit
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manages scheduling of notifications using WorkManager.
+ * Manages scheduling of exact alarm notifications using AlarmManager.
  */
 @Singleton
 class NotificationScheduler @Inject constructor(
@@ -21,7 +24,7 @@ class NotificationScheduler @Inject constructor(
     private val repository: GoalRepository
 ) {
     
-    private val workManager = WorkManager.getInstance(context)
+    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     
     /**
      * Schedules all notifications for a goal.
@@ -29,6 +32,7 @@ class NotificationScheduler @Inject constructor(
      */
     suspend fun scheduleNotifications(goalId: Long) {
         val goal = repository.getActiveGoal() ?: return
+        
         if (goal.id != goalId) return
         
         val today = LocalDate.now()
@@ -45,7 +49,7 @@ class NotificationScheduler @Inject constructor(
     }
     
     /**
-     * Schedules a check for a specific window on a specific date.
+     * Schedules an exact alarm for a specific window on a specific date.
      */
     private fun scheduleWindowCheck(
         goalId: Long,
@@ -58,32 +62,66 @@ class NotificationScheduler @Inject constructor(
         val now = LocalDateTime.now()
         
         // Only schedule if the end time is in the future
-        if (endTime.isBefore(now)) {
-            return
+        if (endTime.isBefore(now)) return
+        
+        val triggerTime = endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra(AlarmReceiver.EXTRA_GOAL_ID, goalId)
+            putExtra(AlarmReceiver.EXTRA_WINDOW_INDEX, windowIndex)
+            putExtra(AlarmReceiver.EXTRA_DATE, date.toString())
         }
         
-        val delay = Duration.between(now, endTime).toMillis()
+        val requestCode = getRequestCode(goalId, windowIndex, date)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         
-        val inputData = Data.Builder()
-            .putLong(WindowCheckWorker.KEY_GOAL_ID, goalId)
-            .putInt(WindowCheckWorker.KEY_WINDOW_INDEX, windowIndex)
-            .putString(WindowCheckWorker.KEY_DATE, date.toString())
-            .build()
-        
-        val workRequest = OneTimeWorkRequestBuilder<WindowCheckWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(inputData)
-            .addTag(getWorkTag(goalId))
-            .build()
-        
-        workManager.enqueue(workRequest)
+        // Use exact alarm for precise notification timing
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
     }
     
     /**
      * Cancels all notifications for a goal.
      */
     fun cancelNotifications(goalId: Long) {
-        workManager.cancelAllWorkByTag(getWorkTag(goalId))
+        // Cancel all possible alarms for this goal
+        // We need to iterate through possible dates and windows
+        // For simplicity, we'll cancel based on a pattern
+        for (dayOffset in 0..365) {
+            for (windowIndex in 0..10) {
+                val date = LocalDate.now().plusDays(dayOffset.toLong())
+                val requestCode = getRequestCode(goalId, windowIndex, date)
+                
+                val intent = Intent(context, AlarmReceiver::class.java)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                )
+                
+                pendingIntent?.let {
+                    alarmManager.cancel(it)
+                    it.cancel()
+                }
+            }
+        }
     }
     
     /**
@@ -92,15 +130,20 @@ class NotificationScheduler @Inject constructor(
     suspend fun rescheduleAllNotifications() {
         val goal = repository.getActiveGoal()
         if (goal != null) {
-            // Cancel existing work first
+            // Cancel existing alarms first
             cancelNotifications(goal.id)
             // Reschedule
             scheduleNotifications(goal.id)
         }
     }
     
-    private fun getWorkTag(goalId: Long): String {
-        return "${WindowCheckWorker.WORK_NAME_PREFIX}$goalId"
+    /**
+     * Generates a unique request code for each alarm.
+     */
+    private fun getRequestCode(goalId: Long, windowIndex: Int, date: LocalDate): Int {
+        // Combine goalId, windowIndex, and date to create a unique code
+        val dateHash = date.toString().hashCode()
+        return (goalId.toInt() * 1000 + windowIndex * 100 + (dateHash % 100))
     }
 }
 

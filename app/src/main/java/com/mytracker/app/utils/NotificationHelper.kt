@@ -46,6 +46,7 @@ class NotificationHelper @Inject constructor(
     
     fun sendMissedWindowNotification(goalTitle: String, windowIndex: Int) {
         val scoldMessage = getRandomScoldMessage()
+        val notificationId = NOTIFICATION_ID_BASE + windowIndex
         
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
@@ -55,7 +56,7 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
             .build()
         
-        notificationManager.notify(NOTIFICATION_ID_BASE + windowIndex, notification)
+        notificationManager.notify(notificationId, notification)
     }
     
     fun sendPraiseNotification(goalTitle: String) {
