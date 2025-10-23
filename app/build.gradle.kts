@@ -41,6 +41,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -67,6 +68,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.1")
+    
+    // Desugaring for java.time API support on API < 26
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
@@ -120,7 +124,9 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom("$projectDir/detekt.yml")
-    
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     reports {
         html.required.set(true)
         xml.required.set(true)

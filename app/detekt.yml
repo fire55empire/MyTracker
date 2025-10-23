@@ -40,6 +40,8 @@ exceptions:
 
 formatting:
   active: false  # Disable all formatting rules to avoid conflicts
+  MaxLineLength:
+    active: false
 
 naming:
   active: true
@@ -70,4 +72,6 @@ style:
     active: false  # Compose uses wildcard imports
   UnusedPrivateProperty:
     active: false  # False positives
+  ImplicitDefaultLocale:
+    active: false  # UI formatting is OK with default locale
 

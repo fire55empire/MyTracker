@@ -26,7 +26,7 @@ fun NavGraph(
         // Экран выбора шаблона
         composable(Screen.TemplateSelection.route) {
             TemplateSelectionScreen(
-                onGoalCreated = { goalId ->
+                onGoalCreated = { _ ->
                     navController.navigate(Screen.ActiveGoal.route) {
                         popUpTo(Screen.TemplateSelection.route) { inclusive = true }
                     }

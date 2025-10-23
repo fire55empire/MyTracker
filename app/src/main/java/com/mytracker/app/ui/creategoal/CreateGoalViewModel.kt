@@ -31,7 +31,6 @@ class CreateGoalViewModel @Inject constructor(
     }
     
     fun onDurationDaysChanged(days: String) {
-        val daysInt = days.toIntOrNull() ?: 0
         _uiState.value = _uiState.value.copy(durationDays = days, errorMessage = null)
     }
     
